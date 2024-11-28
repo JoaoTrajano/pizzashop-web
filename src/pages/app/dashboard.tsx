@@ -1,4 +1,4 @@
-import { ContentPage } from '@/components/ContentPage'
+import { ContentPage } from '@/components/content-page'
 
 export function Dashboard() {
   return (
