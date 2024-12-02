@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { string, z } from 'zod'
 
 import {
@@ -24,47 +25,73 @@ import { Textarea } from './ui/textarea'
 
 const storeProfileSchema = z.object({
   name: string().min(1),
-  description: string(),
+  description: string().nullable(),
 })
 export type StoreProfileSchemaType = z.infer<typeof storeProfileSchema>
 
 export function StoreProfileDialog() {
   const queryClient = useQueryClient()
 
+  function updateManagedRestaurantCache({
+    description,
+    name,
+  }: StoreProfileSchemaType) {
+    const cached = queryClient.getQueryData<GetManagedRestaurantResponse>([
+      'managed-restaurant',
+    ])
+
+    if (cached) {
+      queryClient.setQueryData<GetManagedRestaurantResponse>(
+        ['managed-restaurant'],
+        {
+          ...cached,
+          name,
+          description,
+        },
+      )
+    }
+
+    return { cached }
+  }
+
+  async function handleUpdateProfile(data: StoreProfileSchemaType) {
+    try {
+      await updateManagerProfile({
+        name: data.name,
+        description: data.description,
+      })
+
+      toast.success('Perfil atualizado com sucesso!')
+    } catch (error) {
+      toast.success('Erro atualizar o perfil, tente novamente!')
+    }
+  }
+
   const { data: managerRestaurant } = useManagerRestaurant()
   const { mutateAsync: updateManagerProfile } = useUpdateManagerProfile({
-    onSuccess(_, { name, description }) {
-      const cached = queryClient.getQueryData<GetManagedRestaurantResponse>([
-        'managed-restaurant',
-      ])
+    onMutate({ name, description }) {
+      const { cached } = updateManagedRestaurantCache({ name, description })
 
-      if (cached) {
-        queryClient.setQueryData<GetManagedRestaurantResponse>(
-          ['managed-restaurant'],
-          {
-            ...cached,
-            name,
-            description,
-          },
-        )
+      return { previousProfile: cached }
+    },
+    onError(_, __, context) {
+      if (context?.previousProfile) {
+        updateManagedRestaurantCache(context.previousProfile)
       }
     },
   })
 
-  const { register, handleSubmit } = useForm<StoreProfileSchemaType>({
+  const {
+    register,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<StoreProfileSchemaType>({
     resolver: zodResolver(storeProfileSchema),
     values: {
       name: managerRestaurant?.name ?? '',
       description: managerRestaurant?.description ?? '',
     },
   })
-
-  async function handleUpdateProfile(data: StoreProfileSchemaType) {
-    await updateManagerProfile({
-      name: data.name,
-      description: data.description,
-    })
-  }
 
   return (
     <DialogContent>
@@ -99,7 +126,7 @@ export function StoreProfileDialog() {
               Cancelar
             </Button>
           </DialogClose>
-          <Button variant="success" type="submit">
+          <Button variant="success" type="submit" disabled={isSubmitting}>
             Salvar
           </Button>
         </DialogFooter>
