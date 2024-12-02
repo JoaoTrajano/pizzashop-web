@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
+import { useRegisterRestaurants } from '@/api/register-restaurants'
 import { ContentPage } from '@/components/content-page'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useRegisterRestaurants } from '@/api/register-restaurants'
 
 const signUpFormSchema = z.object({
   restaurantName: z.string(),
@@ -25,11 +25,16 @@ export function SignUp() {
   } = useForm<SignUpFormType>()
 
   const navigate = useNavigate()
-  const {mutateAsync: registerRestaurant} = useRegisterRestaurants()
+  const { mutateAsync: registerRestaurant } = useRegisterRestaurants()
 
   async function handleSignUp(data: SignUpFormType) {
     try {
-      await registerRestaurant({email: data.email, managerName: data.managerName, phone: data.phone, restaurantName: data.restaurantName})
+      await registerRestaurant({
+        email: data.email,
+        managerName: data.managerName,
+        phone: data.phone,
+        restaurantName: data.restaurantName,
+      })
       toast.success('Restaurante cadastrado com sucesso!.', {
         action: {
           label: 'Login',
@@ -37,7 +42,9 @@ export function SignUp() {
         },
       })
     } catch (error) {
-      toast.error('Houve um erro ao tentar cadsatrar o restaurante. Tente novamente.')
+      toast.error(
+        'Houve um erro ao tentar cadsatrar o restaurante. Tente novamente.',
+      )
     }
   }
 

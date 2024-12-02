@@ -1,13 +1,14 @@
-import { api } from '@/lib/axios'
 import { useMutation } from '@tanstack/react-query'
+
+import { api } from '@/lib/axios'
 
 export interface RegisterRestaurantsBody {
   restaurantName: string
   managerName: string
-  email: string,
+  email: string
   phone: string
 }
- async function registerRestaurants(body: RegisterRestaurantsBody) {
+async function registerRestaurants(body: RegisterRestaurantsBody) {
   await api.post('/restaurants', body)
 }
 

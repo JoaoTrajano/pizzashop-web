@@ -1,5 +1,8 @@
 import { Building, ChevronDown, LogOut } from 'lucide-react'
 
+import { useManagerRestaurant } from '@/api/get-managed-restaurant'
+import { useProfile } from '@/api/get-profile'
+
 import { Button } from './ui/button'
 import {
   DropdownMenu,
@@ -11,6 +14,8 @@ import {
 } from './ui/dropdown-menu'
 
 export function AccountMenu() {
+  const { data: profile } = useProfile()
+  const { data: managerRestaurant } = useManagerRestaurant()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -18,15 +23,15 @@ export function AccountMenu() {
           variant="outline"
           className="flex select-none items-center gap-2"
         >
-          Pizza Shop
+          {managerRestaurant?.name}
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col">
-          <span>João Trajano</span>
+          <span>{profile?.name}</span>
           <span className="text-xs font-normal text-muted-foreground">
-            joao.trajanosouza@gmail.com
+            {profile?.email}
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
