@@ -21,5 +21,6 @@ export function useManagerRestaurant() {
   return useQuery({
     queryKey: ['managed-restaurant'],
     queryFn: getManagedRestaurant,
+    staleTime: Infinity,
   })
 }
