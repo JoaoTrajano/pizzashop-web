@@ -12,10 +12,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
+import { Skeleton } from './ui/skeleton'
 
 export function AccountMenu() {
-  const { data: profile } = useProfile()
-  const { data: managerRestaurant } = useManagerRestaurant()
+  const { data: profile, isLoading: isLoadingProfile } = useProfile()
+  const { data: managerRestaurant, isLoading: isLoadingManagerRestaurant } =
+    useManagerRestaurant()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -23,16 +26,29 @@ export function AccountMenu() {
           variant="outline"
           className="flex select-none items-center gap-2"
         >
-          {managerRestaurant?.name}
+          {isLoadingManagerRestaurant ? (
+            <Skeleton className="h-4 w-40" />
+          ) : (
+            managerRestaurant?.name
+          )}
           <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col">
-          <span>{profile?.name}</span>
-          <span className="text-xs font-normal text-muted-foreground">
-            {profile?.email}
-          </span>
+          {isLoadingProfile ? (
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          ) : (
+            <>
+              <span>{profile?.name}</span>
+              <span className="text-xs font-normal text-muted-foreground">
+                {profile?.email}
+              </span>
+            </>
+          )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
