@@ -1,5 +1,5 @@
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -7,6 +7,7 @@ import { ContentPage } from '@/components/content-page'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useRegisterRestaurants } from '@/api/register-restaurants'
 
 const signUpFormSchema = z.object({
   restaurantName: z.string(),
@@ -23,16 +24,20 @@ export function SignUp() {
     formState: { isSubmitting },
   } = useForm<SignUpFormType>()
 
-  function handleSignUp(data: SignUpFormType) {
+  const navigate = useNavigate()
+  const {mutateAsync: registerRestaurant} = useRegisterRestaurants()
+
+  async function handleSignUp(data: SignUpFormType) {
     try {
-      toast.success('Enviamos um link de autenticação para o seu e-mail.', {
+      await registerRestaurant({email: data.email, managerName: data.managerName, phone: data.phone, restaurantName: data.restaurantName})
+      toast.success('Restaurante cadastrado com sucesso!.', {
         action: {
-          label: 'Reenviar',
-          onClick: () => handleSignUp(data),
+          label: 'Login',
+          onClick: () => navigate(`/sign-in?email=${data.email}`),
         },
       })
     } catch (error) {
-      toast.error('Credenciais inválidas.')
+      toast.error('Houve um erro ao tentar cadsatrar o restaurante. Tente novamente.')
     }
   }
 
