@@ -1,7 +1,9 @@
 import { Building, ChevronDown, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 import { useManagerRestaurant } from '@/api/get-managed-restaurant'
 import { useProfile } from '@/api/get-profile'
+import { useSingOut } from '@/api/sign-out'
 
 import { StoreProfileDialog } from './store-profile-dialog'
 import { Button } from './ui/button'
@@ -17,9 +19,16 @@ import {
 import { Skeleton } from './ui/skeleton'
 
 export function AccountMenu() {
+  const navigate = useNavigate()
+
   const { data: profile, isLoading: isLoadingProfile } = useProfile()
   const { data: managerRestaurant, isLoading: isLoadingManagerRestaurant } =
     useManagerRestaurant()
+  const { mutateAsync: handleLogout, isPending } = useSingOut({
+    onSuccess() {
+      navigate('/sign-in', { replace: true })
+    },
+  })
 
   return (
     <Dialog>
@@ -60,9 +69,15 @@ export function AccountMenu() {
               <span>Perfil da loja</span>
             </DropdownMenuItem>
           </DialogTrigger>
-          <DropdownMenuItem className="text-rose-500 dark:text-rose-400">
-            <LogOut className="mr-2 h-4 w-2" />
-            <span>Sair</span>
+          <DropdownMenuItem
+            className="text-rose-500 dark:text-rose-400"
+            asChild
+            disabled={isPending}
+          >
+            <button className="w-full" onClick={() => handleLogout()}>
+              <LogOut className="mr-2 h-4 w-2" />
+              <span>Sair</span>
+            </button>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
