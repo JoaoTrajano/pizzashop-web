@@ -1,8 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
+import {
+  useQuery,
+  type UseQueryOptions,
+  type UseQueryResult,
+} from '@tanstack/react-query'
 
 import { api } from '@/lib/axios'
 
-export interface GetOrdersResponseResponse {
+export interface GetOrdersParams {
+  pageIndex?: number | null
+}
+
+export interface GetOrdersResponse {
   orders: {
     orderId: string
     createdAt: string
@@ -16,18 +24,25 @@ export interface GetOrdersResponseResponse {
     totalCount: number
   }
 }
-async function getOrders() {
-  const response = await api.get<GetOrdersResponseResponse>('/orders', {
+
+async function getOrders({
+  pageIndex,
+}: GetOrdersParams): Promise<GetOrdersResponse> {
+  const response = await api.get<GetOrdersResponse>('/orders', {
     params: {
-      pageIndex: 0,
+      pageIndex,
     },
   })
   return response.data
 }
 
-export function useGetOders() {
-  return useQuery({
-    queryKey: ['orders'],
-    queryFn: getOrders,
+export function useGetOrders(
+  params: GetOrdersParams,
+  options?: UseQueryOptions<GetOrdersResponse, Error>,
+): UseQueryResult<GetOrdersResponse, Error> {
+  return useQuery<GetOrdersResponse, Error>({
+    queryKey: ['orders', params],
+    queryFn: () => getOrders(params),
+    ...options,
   })
 }

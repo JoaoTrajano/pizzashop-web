@@ -1,4 +1,7 @@
-import { useGetOders } from '@/api/get-orders'
+import { useSearchParams } from 'react-router-dom'
+import { z } from 'zod'
+
+import { useGetOrders } from '@/api/get-orders'
 import { ContentPage } from '@/components/content-page'
 import { Pagination } from '@/components/pagination'
 import {
@@ -13,7 +16,23 @@ import { OrderTableFilters } from './order-table-filters'
 import { OrderTableRow } from './order-table-row'
 
 export function Orders() {
-  const { data: result } = useGetOders()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const pageIndex = z.coerce
+    .number()
+    .transform((page) => page - 1)
+    .parse(searchParams.get('page') ?? '1')
+
+  const { data: result } = useGetOrders({ pageIndex })
+
+  function handleChangePage(pageIndex: number) {
+    setSearchParams((state) => {
+      state.set('page', String(pageIndex + 1))
+
+      return state
+    })
+  }
+
   return (
     <ContentPage titlePage="Pedidos">
       <div className="flex flex-col gap-4">
@@ -43,7 +62,14 @@ export function Orders() {
             </TableBody>
           </Table>
         </div>
-        <Pagination pageIndex={0} totalCount={105} perPage={10} />
+        {result && (
+          <Pagination
+            pageIndex={result.meta.pageIndex}
+            totalCount={result.meta.totalCount}
+            perPage={result.meta.perPage}
+            changePage={handleChangePage}
+          />
+        )}
       </div>
     </ContentPage>
   )
